@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Bot RPA</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+
+    <div class="container">
+        <!-- Barra de Navegação (Abas) -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="abrirAba(event, 'geral')">Organizador Geral</button>
+            <button class="tab-btn" onclick="abrirAba(event, 'desktop')">Bot Área de Trabalho</button>
+        </div>
+
+        <!-- Conteúdo da Aba 1: Organizador Geral -->
+        <div id="geral" class="tab-content active">
+            <h2>Organizar qualquer Pasta</h2>
+            <p>Insira o caminho completo do diretório que deseja organizar automaticamente pelas regras de categorias.</p>
+            
+            <div class="form-group">
+                <label for="caminho">Caminho da Pasta:</label>
+                <input type="text" id="caminho"
+                        placeholder="Ex: C:\Users\suporte\Downloads">
+            </div>
+
+            <button class="btn btn-alt" onclick="selecionarPasta()">
+                Procurar Pasta
+            </button>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="chk_custom" onchange="toggleCustomForm()">
+                <label for="chk_custom">Adicionar regra de extensão customizada</label>
+            </div>
+
+            <!-- Seção Customizada Oculta Inicialmente (Controlada via JS) -->
+            <div id="form_custom" style="display: none;">
+                <div class="form-group">
+                    <label for="extensao_custom">Extensão (com ponto):</label>
+                    <input type="text" id="extensao_custom" placeholder="Ex: .iso">
+                </div>
+                <div class="form-group">
+                    <label for="pasta_custom">Nome da Pasta Destino:</label>
+                    <input type="text" id="pasta_custom" placeholder="Ex: Arquivos ISO">
+                </div>
+            </div>
+
+            <button class="btn" onclick="organizarGeral()">Organizar Pasta</button>
+            <div id="status_geral" class="status-box"></div>
+        </div>
+
+        <!-- Conteúdo da Aba 2: Bot Área de Trabalho -->
+        <div id="desktop" class="tab-content">
+            <h2>Automação RPA no Desktop</h2>
+            <p>Selecione uma das ações abaixo para gerenciar os arquivos da sua Área de Trabalho atual.</p>
+            
+            <button class="btn btn-alt" onclick="organizarDesktop('pastas')">Organizar por Pastas de Categorias</button>
+            <button class="btn btn-dark" onclick="organizarDesktop('alfabetica')">Ordenar por Ordem Alfabética (RPA)</button>
+            
+            <div id="status_desktop" class="status-box"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript de Integração com o Flask -->
+    <script>
+        function selecionarPasta() {
+            fetch('/selecionar-pasta')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('caminho').value = data.caminho;
+            });
+        }
+
+
+        // Alternar entre as abas do painel
+        function abrirAba(evt, nomeAba) {
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(nomeAba).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Mostrar/Ocultar o formulário de regra customizada
+        function toggleCustomForm() {
+            const chk = document.getElementById('chk_custom');
+            const form = document.getElementById('form_custom');
+            form.style.display = chk.checked ? 'block' : 'none';
+        }
+
+        // Enviar requisição para Organização Geral
+        function organizarGeral() {
+            const caminho = document.getElementById('caminho').value;
+            const chkCustom = document.getElementById('chk_custom').checked;
+            const extCustom = chkCustom ? document.getElementById('extensao_custom').value : null;
+            const pastaCustom = chkCustom ? document.getElementById('pasta_custom').value : null;
+            const statusBox = document.getElementById('status_geral');
+
+            if (!caminho) {
+                mostrarStatus(statusBox, 'Por favor, informe o caminho da pasta.', 'error');
+                return;
+            }
+
+            mostrarStatus(statusBox, 'Processando...', 'success');
+
+            fetch('/organizar-geral', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    caminho: caminho,
+                    extensao_custom: extCustom,
+                    pasta_custom: pastaCustom
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.sucesso) {
+                    mostrarStatus(statusBox, data.mensagem, 'success');
+                } else {
+                    mostrarStatus(statusBox, data.mensagem, 'error');
+                }
+            })
+            .catch(err => mostrarStatus(statusBox, 'Erro na comunicação com o servidor.', 'error'));
+        }
+
+        // Enviar requisição para as funções do Desktop
+        function organizarDesktop(tipo) {
+            const statusBox = document.getElementById('status_desktop');
+            mostrarStatus(statusBox, 'Executando automação...', 'success');
+
+            fetch('/organizar-desktop', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tipo: tipo })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.sucesso) {
+                    mostrarStatus(statusBox, data.mensagem, 'success');
+                } else {
+                    mostrarStatus(statusBox, data.mensagem, 'error');
+                }
+            })
+            .catch(err => mostrarStatus(statusBox, 'Erro ao executar o comando RPA.', 'error'));
+        }
+
+        // Função utilitária para exibir as caixas de status do seu CSS
+        function mostrarStatus(elemento, mensagem, tipo) {
+            elemento.innerText = mensagem;
+            elemento.className = `status-box ${tipo}`;
+            elemento.style.display = 'block';
+}
+    </script>
+</body>
+</html>
+
+
