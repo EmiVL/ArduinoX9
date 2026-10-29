@@ -4,63 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Bot RPA</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
+    <!-- Tailwind CSS via CDN: Resolve o problema do GitHub e traz seu estilo direto no HTML -->
+    <script src="https://tailwindcss.com"></script>
+    <style>
+        /* Configurações básicas de exibição das abas */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .status-box { display: none; }
+    </style>
 </head>
-<body>
+<body class="bg-[#f4f6f9] m-0 p-5 flex justify-center font-['Segoe_UI',Tahoma,Geneva,Verdana,sans-serif]">
 
-    <div class="container">
-        <!-- Barra de Navegação (Abas) -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="abrirAba(event, 'geral')">Organizador Geral</button>
-            <button class="tab-btn" onclick="abrirAba(event, 'desktop')">Bot Área de Trabalho</button>
+    <!-- Container Principal do Painel -->
+    <div class="w-full max-w-[650px] bg-white rounded-lg shadow-[0_4px_15px_rgba(0,0,0,0.1)] overflow-hidden">
+        
+        <!-- Barra de Navegação (Abas / Janelas) -->
+        <div class="tabs flex bg-[#2c3e50]">
+            <button class="tab-btn active flex-1 p-[15px] border-none text-white bg-[#3498db] text-base font-bold cursor-pointer transition duration-300 focus:outline-none" onclick="abrirAba(event, 'geral')">
+                Organizador Geral
+            </button>
+            <button class="tab-btn flex-1 p-[15px] border-none text-[#bdc3c7] bg-none text-base font-bold cursor-pointer transition duration-300 hover:bg-[#34495e] hover:text-white focus:outline-none" onclick="abrirAba(event, 'desktop')">
+                Bot Área de Trabalho
+            </button>
         </div>
 
         <!-- Conteúdo da Aba 1: Organizador Geral -->
-        <div id="geral" class="tab-content active">
-            <h2>Organizar qualquer Pasta</h2>
-            <p>Insira o caminho completo do diretório que deseja organizar automaticamente pelas regras de categorias.</p>
+        <div id="geral" class="tab-content active p-[25px]">
+            <h2 class="mt-0 text-[#333] text-2xl font-bold mb-2">Organizar qualquer Pasta</h2>
+            <p class="text-[#666] line-height-[1.5] mb-4">Insira o caminho completo do diretório que deseja organizar automaticamente pelas regras de categorias.</p>
             
-            <div class="form-group">
-                <label for="caminho">Caminho da Pasta:</label>
-                <input type="text" id="caminho"
-                        placeholder="Ex: C:\Users\suporte\Downloads">
+            <div class="form-group mb-[15px]">
+                <label for="caminho" class="block mb-5px font-semibold text-[#555] mb-1">Caminho da Pasta:</label>
+                <input type="text" id="caminho" placeholder="Ex: C:\Users\suporte\Downloads"
+                       class="w-full p-2.5 border border-[#ccc] rounded-[4px] box-border text-sm focus:border-[#3498db] focus:outline-none transition">
             </div>
 
-            <button class="btn btn-alt" onclick="selecionarPasta()">
+            <button class="btn btn-alt bg-[#9b59b6] hover:bg-[#8e44ad] text-white p-[12px_20px] border-none rounded-[4px] cursor-pointer text-base w-full font-bold transition duration-200 mb-[15px]" onclick="selecionarPasta()">
                 Procurar Pasta
             </button>
 
-            <div class="checkbox-group">
-                <input type="checkbox" id="chk_custom" onchange="toggleCustomForm()">
-                <label for="chk_custom">Adicionar regra de extensão customizada</label>
+            <div class="checkbox-group flex items-center my-[15px]">
+                <input type="checkbox" id="chk_custom" onchange="toggleCustomForm()" class="mr-2.5 scale-[1.2] cursor-pointer">
+                <label for="chk_custom" class="font-semibold text-[#555] cursor-pointer select-none">Adicionar regra de extensão customizada</label>
             </div>
 
-            <!-- Seção Customizada Oculta Inicialmente (Controlada via JS) -->
-            <div id="form_custom" style="display: none;">
-                <div class="form-group">
-                    <label for="extensao_custom">Extensão (com ponto):</label>
-                    <input type="text" id="extensao_custom" placeholder="Ex: .iso">
+            <!-- Seção Customizada Oculta Inicialmente -->
+            <div id="form_custom" class="border-l-[3px] border-[#3498db] pl-[15px] mb-[20px] bg-[#fcfcfc] pt-2.5 pb-[5px]" style="display: none;">
+                <div class="form-group mb-[15px]">
+                    <label for="extensao_custom" class="block font-semibold text-[#555] mb-1">Extensão (com ponto):</label>
+                    <input type="text" id="extensao_custom" placeholder="Ex: .iso"
+                           class="w-full p-2.5 border border-[#ccc] rounded-[4px] box-border text-sm focus:border-[#3498db] focus:outline-none transition">
                 </div>
-                <div class="form-group">
-                    <label for="pasta_custom">Nome da Pasta Destino:</label>
-                    <input type="text" id="pasta_custom" placeholder="Ex: Arquivos ISO">
+                <div class="form-group mb-[15px]">
+                    <label for="pasta_custom" class="block font-semibold text-[#555] mb-1">Nome da Pasta Destino:</label>
+                    <input type="text" id="pasta_custom" placeholder="Ex: Arquivos ISO"
+                           class="w-full p-2.5 border border-[#ccc] rounded-[4px] box-border text-sm focus:border-[#3498db] focus:outline-none transition">
                 </div>
             </div>
 
-            <button class="btn" onclick="organizarGeral()">Organizar Pasta</button>
-            <div id="status_geral" class="status-box"></div>
+            <button class="btn bg-[#2ecc71] hover:bg-[#27ae60] text-white p-[12px_20px] border-none rounded-[4px] cursor-pointer text-base w-full font-bold transition duration-200" onclick="organizarGeral()">
+                Organizar Pasta
+            </button>
+            
+            <div id="status_geral" class="status-box mt-[15px] p-[12px] rounded-[4px] text-center font-bold text-sm"></div>
         </div>
 
         <!-- Conteúdo da Aba 2: Bot Área de Trabalho -->
-        <div id="desktop" class="tab-content">
-            <h2>Automação RPA no Desktop</h2>
-            <p>Selecione uma das ações abaixo para gerenciar os arquivos da sua Área de Trabalho atual.</p>
+        <div id="desktop" class="tab-content p-[25px]">
+            <h2 class="mt-0 text-[#333] text-2xl font-bold mb-2">Automação RPA no Desktop</h2>
+            <p class="text-[#666] line-height-[1.5] mb-4">Selecione uma das ações abaixo para gerenciar os arquivos da sua Área de Trabalho atual.</p>
             
-            <button class="btn btn-alt" onclick="organizarDesktop('pastas')">Organizar por Pastas de Categorias</button>
-            <button class="btn btn-dark" onclick="organizarDesktop('alfabetica')">Ordenar por Ordem Alfabética (RPA)</button>
+            <button class="btn btn-alt bg-[#9b59b6] hover:bg-[#8e44ad] text-white p-[12px_20px] border-none rounded-[4px] cursor-pointer text-base w-full font-bold transition duration-200 mb-[15px]" onclick="organizarDesktop('pastas')">
+                Organizar por Pastas de Categorias
+            </button>
+            <button class="btn btn-dark bg-[#34495e] hover:bg-[#2c3e50] text-white p-[12px_20px] border-none rounded-[4px] cursor-pointer text-base w-full font-bold transition duration-200" onclick="organizarDesktop('alfabetica')">
+                Ordenar por Ordem Alfabética (RPA)
+            </button>
             
-            <div id="status_desktop" class="status-box"></div>
+            <div id="status_desktop" class="status-box mt-[15px] p-[12px] rounded-[4px] text-center font-bold text-sm"></div>
         </div>
     </div>
 
@@ -74,17 +95,18 @@
             });
         }
 
-
-        // Alternar entre as abas do painel
+        // Alternar entre as abas do painel (atualizado para manter a paleta exata do CSS original)
         function abrirAba(evt, nomeAba) {
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => content.classList.remove('active'));
 
             const buttons = document.querySelectorAll('.tab-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
+            buttons.forEach(btn => {
+                btn.className = "tab-btn flex-1 p-[15px] border-none text-[#bdc3c7] bg-none text-base font-bold cursor-pointer transition duration-300 hover:bg-[#34495e] hover:text-white focus:outline-none";
+            });
 
             document.getElementById(nomeAba).classList.add('active');
-            evt.currentTarget.classList.add('active');
+            evt.currentTarget.className = "tab-btn active flex-1 p-[15px] border-none text-white bg-[#3498db] text-base font-bold cursor-pointer transition duration-300 focus:outline-none";
         }
 
         // Mostrar/Ocultar o formulário de regra customizada
@@ -150,14 +172,14 @@
             .catch(err => mostrarStatus(statusBox, 'Erro ao executar o comando RPA.', 'error'));
         }
 
-        // Função utilitária para exibir as caixas de status do seu CSS
+        // Função de status adaptada para as classes de cores do seu CSS antigo
         function mostrarStatus(elemento, mensagem, tipo) {
             elemento.innerText = mensagem;
-            elemento.className = `status-box ${tipo}`;
             elemento.style.display = 'block';
+            
+            if (tipo === 'success') {
+                elemento.className = "status-box mt-[15px] p-[12px] rounded-[4px] text-center font-bold text-sm bg-[#d4edda] text-[#155724] border border-[#c3e6cb]";
+            } else {
+elemento.className = "status-box mt-[15px] p-[12px] rounded-[4px] text-center font-bold text-sm bg-[#f8d7da] text-[#721c24] border border-[#f5c6cb]";
 }
-    </script>
-</body>
-</html>
-
-
+}
